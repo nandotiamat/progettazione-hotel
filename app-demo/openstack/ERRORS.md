@@ -63,3 +63,19 @@ Even though the line was commented out in the `EOF` block, Terraform's interpola
 
 **Solution:**
 Removed the commented-out line containing the interpolation entirely from `outputs.tf`.
+
+### 5. Missing Authentication Credentials
+
+**Error:**
+```
+Error: One of 'auth_url' or 'cloud' must be specified
+  with provider["registry.terraform.io/terraform-provider-openstack/openstack"],
+  on provider.tf line 11, in provider "openstack":
+```
+
+**Cause:**
+The Terraform provider is not receiving the necessary authentication parameters (`OS_AUTH_URL`, `OS_USERNAME`, etc.). This indicates that the environment variables from the `openrc` file are not currently set in the shell session where `terraform plan` is running.
+
+**Solution:**
+The user must source the OpenStack credentials file again.
+Command: `source ~/devstack/openrc admin admin` (or appropriate path/user).
