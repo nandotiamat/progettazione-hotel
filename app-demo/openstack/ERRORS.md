@@ -49,3 +49,17 @@ User reported only `cirros-0.6.3-x86_64-disk` is available, while the default wa
 **Solution:**
 Updated `variables.tf` to use `cirros-0.6.3-x86_64-disk`.
 **Architecture Note:** Since CirrOS cannot run the installation scripts (`user_data` with `apt-get`), the infrastructure will be provisioned successfully, but the application services (Postgres, Nginx, Python) will **not** be installed. This is a known limitation of the current DevStack environment lacking a full Ubuntu image.
+
+### 4. Undeclared Resource in Outputs
+
+**Error:**
+```
+Reference to undeclared resource
+on outputs.tf line 42: SWIFT_CONTAINER_NAME=${openstack_objectstorage_container_v1.media_container.name}
+```
+
+**Cause:**
+Even though the line was commented out in the `EOF` block, Terraform's interpolation `${...}` is processed **before** the string is evaluated as content. Since we deleted the resource `media_container` (in `storage.tf`), Terraform cannot resolve this reference, even if it's inside a comment within the heredoc string.
+
+**Solution:**
+Removed the commented-out line containing the interpolation entirely from `outputs.tf`.
