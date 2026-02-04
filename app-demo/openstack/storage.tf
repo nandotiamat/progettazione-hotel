@@ -1,6 +1,6 @@
 # --- OBJECT STORAGE (Swift) ---
 
-resource "openstack_object_storage_container_v1" "media_container" {
+resource "openstack_objectstorage_container_v1" "media_container" {
   name = "hotel-media"
   
   # Make it public (read-only)
@@ -11,10 +11,10 @@ resource "openstack_object_storage_container_v1" "media_container" {
 # This requires the machine running Terraform to have access to the OpenStack API
 # and the python-swiftclient or similar, or we use the provider's object resource.
 
-resource "openstack_object_storage_object_v1" "seed_media" {
+resource "openstack_objectstorage_object_v1" "seed_media" {
   for_each = fileset("${path.module}/seed_media", "**/*")
 
-  container_name = openstack_object_storage_container_v1.media_container.name
+  container_name = openstack_objectstorage_container_v1.media_container.name
   name           = each.value
   source         = "${path.module}/seed_media/${each.value}"
   
