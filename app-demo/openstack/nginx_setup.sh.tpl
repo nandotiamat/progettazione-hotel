@@ -7,6 +7,7 @@ apt-get install -y nginx
 
 # Create Web Root
 mkdir -p /var/www/html
+mkdir -p /var/www/html/media
 chown -R www-data:www-data /var/www/html
 chmod -R 755 /var/www/html
 
@@ -48,6 +49,12 @@ server {
         proxy_set_header Host \$host;
         proxy_set_header X-Real-IP \$remote_addr;
         proxy_set_header X-Forwarded-For \$proxy_add_x_forwarded_for;
+    }
+
+    # Media Storage (Local Fallback)
+    location /media/ {
+        alias /var/www/html/media/;
+        autoindex on;
     }
 }
 EOF

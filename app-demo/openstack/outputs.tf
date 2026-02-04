@@ -39,6 +39,8 @@ AUTH_PORT=8080
 # --- STORAGE ---
 # Assuming standard Swift port and tenant
 SWIFT_AUTH_URL=http://controller:5000/v3
-SWIFT_CONTAINER_NAME=${openstack_objectstorage_container_v1.media_container.name}
+# SWIFT_CONTAINER_NAME=${openstack_objectstorage_container_v1.media_container.name}
+# Media hosted locally on Gateway
+MEDIA_URL=http://${openstack_networking_floatingip_v2.gateway_fip.address}/media
 EOF
 }
