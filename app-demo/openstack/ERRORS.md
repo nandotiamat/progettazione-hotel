@@ -79,3 +79,18 @@ The Terraform provider is not receiving the necessary authentication parameters 
 **Solution:**
 The user must source the OpenStack credentials file again.
 Command: `source ~/devstack/openrc admin admin` (or appropriate path/user).
+
+### 6. Invalid Key Name
+
+**Error:**
+```
+Error: Error creating OpenStack server: Bad request with: ... message: "Invalid key_name provided."
+```
+
+**Cause:**
+The Terraform configuration references an SSH key named `mykey` (in `variables.tf`), but this key does not exist in the OpenStack environment.
+
+**Solution:**
+We will create a Terraform resource `openstack_compute_keypair_v2` to create the keypair automatically if it doesn't exist, and update `variables.tf` to depend on this resource (or just hardcode the reference).
+Alternatively, the user can create the key manually, but automating it is safer.
+We will add `keypair.tf` to create a key named `hotel-key` and update the variable default.

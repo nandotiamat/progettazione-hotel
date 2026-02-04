@@ -16,5 +16,5 @@ variable "db_password" {
 
 variable "ssh_key_name" {
   type    = string
-  default = "mykey" # Assumes you have an SSH keypair named 'mykey' in OpenStack
+  default = "hotel-key" # We now create this in keypair.tf
 }
