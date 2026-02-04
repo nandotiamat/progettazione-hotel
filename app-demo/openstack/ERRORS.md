@@ -40,3 +40,12 @@ Error: error creating OpenStack object storage client: No suitable endpoint coul
 **Solution:**
 1.  **Image:** Update `variables.tf` to default to `cirros-0.6.2-x86_64-disk` (to ensure `apply` works) but strongly advise the user to provide a valid Debian/Ubuntu image name for the application to actually run.
 2.  **Swift:** Refactor the architecture to remove the dependency on Swift. We will move Media Storage to the Gateway Node (Local File System) and serve it via Nginx.
+
+### 3. Image Version Mismatch (CirrOS 0.6.3)
+
+**Error:**
+User reported only `cirros-0.6.3-x86_64-disk` is available, while the default was set to `cirros-0.6.2-x86_64-disk`.
+
+**Solution:**
+Updated `variables.tf` to use `cirros-0.6.3-x86_64-disk`.
+**Architecture Note:** Since CirrOS cannot run the installation scripts (`user_data` with `apt-get`), the infrastructure will be provisioned successfully, but the application services (Postgres, Nginx, Python) will **not** be installed. This is a known limitation of the current DevStack environment lacking a full Ubuntu image.

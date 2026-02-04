@@ -1,6 +1,6 @@
 variable "image_name" {
   type    = string
-  default = "cirros-0.6.2-x86_64-disk" # Common DevStack default. WARNING: User Data scripts need Ubuntu!
+  default = "cirros-0.6.3-x86_64-disk" # Available in current DevStack
 }
 
 variable "flavor_name" {
