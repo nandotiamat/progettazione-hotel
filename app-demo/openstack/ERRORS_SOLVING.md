@@ -41,3 +41,9 @@ During the `terraform plan` and `terraform apply` phases, we encountered 7 disti
 ### 7. Resource Exhaustion (Instance Build Failure)
 **Issue:** Instances stuck in `ERROR` state. The default flavor `m1.small` (2GB RAM) caused the 4-node cluster to exceed the DevStack node's available memory.
 **Resolution:** Downgraded the default flavor in `variables.tf` to `m1.nano` (64MB RAM). This allowed all 4 instances (DB, Auth, App x2) to launch successfully within the constrained environment.
+
+### 8. Disk Quota Mismatch (Ubuntu vs Tiny Flavor)
+**Issue:** `m1.tiny` flavor (1GB Disk) was insufficient for `ubuntu-22.04` image (needs >3GB), causing build errors.
+**Resolution:**
+*   Added `flavor.tf` to create a custom flavor `hotel.optimized` (1GB RAM, 10GB Disk).
+*   Updated Terraform resources to use this custom flavor ID.

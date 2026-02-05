@@ -1,11 +1,11 @@
 variable "image_name" {
   type    = string
-  default = "cirros-0.6.3-x86_64-disk" # Available in current DevStack
+  default = "ubuntu-22.04"
 }
 
 variable "flavor_name" {
   type    = string
-  default = "m1.nano" # Reduced from m1.small to fit in DevStack memory constraints
+  default = "m1.tiny" # Reduced from m1.small to fit in DevStack memory constraints
 }
 
 variable "db_password" {

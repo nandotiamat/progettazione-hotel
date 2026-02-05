@@ -95,24 +95,9 @@ We will create a Terraform resource `openstack_compute_keypair_v2` to create the
 Alternatively, the user can create the key manually, but automating it is safer.
 We will add `keypair.tf` to create a key named `hotel-key` and update the variable default.
 
-### 7. Instance Build Failure (Status: ERROR)
-
-**Error:**
-```
-Error: Error waiting for instance (...) to become ready: unexpected state 'ERROR', wanted target 'ACTIVE'. last error: %!s(<nil>)
-```
-This affected `app_node[0]`, `app_node[1]`, and `auth_node`. `db_node` succeeded.
-
-**Cause Analysis:**
-The instances failed to spawn (went to ERROR state instead of ACTIVE). Common causes in DevStack:
-1.  **Quota Exceeded:** The flavor `m1.small` (default) typically requests 2GB RAM. Launching 4 VMs (DB, 2 Apps, Auth) = 8GB RAM. If the DevStack VM (running in VirtualBox) has only 4GB or 8GB total, OpenStack kills the spawn due to "No valid host was found" (insufficient RAM/CPU).
-2.  **Networking:** Neutron port binding failure (less likely if one succeeded).
-
-**Investigation Steps (for User):**
-Check the failure reason on the OpenStack side: `openstack server show <instance_id>`. Look for `fault`.
-
-**Probable Solution (Resource Constraints):**
-Change the flavor to something smaller (e.g., `m1.nano` or `m1.tiny`) in `variables.tf`. `m1.tiny` usually takes 512MB RAM, which is much safer for a 4-VM deployment on a single DevStack node.
-
-**Action:**
-Update `variables.tf` to default `flavor_name` to `m1.tiny` (or `m1.nano` if available).
+### 8. Instance Build Failure (Disk Size Mismatch)
+**Issue:** Instances stuck in `ERROR` state when using `m1.tiny` flavor with `ubuntu-22.04` image.
+**Cause:** `m1.tiny` provides 1GB Disk, but Ubuntu 22.04 requires ~2.5GB-3GB to install. The scheduler rejected the build.
+**Resolution:**
+*   Created a custom flavor `hotel.optimized` via `flavor.tf` (1GB RAM, 10GB Disk).
+*   Updated all compute resources to use `flavor_id = openstack_compute_flavor_v2.hotel_optimized.id` instead of the generic `flavor_name`.

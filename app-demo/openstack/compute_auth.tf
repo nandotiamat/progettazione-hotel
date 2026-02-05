@@ -3,7 +3,7 @@
 resource "openstack_compute_instance_v2" "auth_node" {
   name            = "auth-node"
   image_name      = var.image_name
-  flavor_name     = var.flavor_name
+  flavor_id       = openstack_compute_flavor_v2.hotel_optimized.id
   key_pair        = var.ssh_key_name
   security_groups = [
     openstack_networking_secgroup_v2.sg_ssh.name,
