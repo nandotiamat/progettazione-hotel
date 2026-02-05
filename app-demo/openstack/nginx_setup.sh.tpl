@@ -1,6 +1,10 @@
 #!/bin/bash
 set -e
 
+# Fix MTU for Nested Virtualization (VirtualBox -> DevStack)
+# Lowers packet size to fit inside VXLAN tunnel
+ip link set dev eth0 mtu 1400 || ip link set dev ens3 mtu 1400
+
 # Install Nginx
 apt-get update
 apt-get install -y nginx

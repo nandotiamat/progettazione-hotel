@@ -23,6 +23,9 @@ resource "openstack_compute_instance_v2" "app_node" {
     #!/bin/bash
     set -e
     
+    # Fix MTU for Nested Virtualization
+    ip link set dev eth0 mtu 1400 || ip link set dev ens3 mtu 1400
+
     # Install Python & System Dependencies
     apt-get update
     apt-get install -y python3 python3-pip python3-venv git
