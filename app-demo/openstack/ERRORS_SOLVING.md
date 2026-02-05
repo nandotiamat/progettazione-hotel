@@ -46,4 +46,9 @@ During the `terraform plan` and `terraform apply` phases, we encountered 7 disti
 **Issue:** `m1.tiny` flavor (1GB Disk) was insufficient for `ubuntu-22.04` image (needs >3GB), causing build errors.
 **Resolution:**
 *   Added `flavor.tf` to create a custom flavor `hotel.optimized` (1GB RAM, 10GB Disk).
-*   Updated Terraform resources to use this custom flavor ID.
+### 9. SSH Connection Refused / Cloud-Init Failure
+**Issue:** VMs boot successfully (login prompt visible on console) but SSH fails with "Connection refused". The `ubuntu` user is not created, and keys are not injected.
+**Cause:** In some DevStack/OpenStack environments, the network metadata service (169.254.169.254) is unreachable during boot, causing Cloud-Init to fail silently.
+**Resolution:**
+*   Enabled `config_drive = true` on all `openstack_compute_instance_v2` resources.
+*   This forces OpenStack to attach a read-only drive containing the metadata (SSH keys, user config), bypassing the network dependency.

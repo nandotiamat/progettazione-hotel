@@ -100,4 +100,7 @@ We will add `keypair.tf` to create a key named `hotel-key` and update the variab
 **Cause:** `m1.tiny` provides 1GB Disk, but Ubuntu 22.04 requires ~2.5GB-3GB to install. The scheduler rejected the build.
 **Resolution:**
 *   Created a custom flavor `hotel.optimized` via `flavor.tf` (1GB RAM, 10GB Disk).
-*   Updated all compute resources to use `flavor_id = openstack_compute_flavor_v2.hotel_optimized.id` instead of the generic `flavor_name`.
+### 9. Cloud-Init Failure (SSH Connection Refused)
+**Issue:** SSH to instances fails with "Connection Refused". Console shows a login prompt but the `ubuntu` user password is unknown/not set.
+**Cause:** Cloud-Init failed to reach the OpenStack Metadata Service over the network to retrieve SSH keys and user data.
+**Resolution:** Enabled `config_drive = true` for all instances. This mounts the metadata as a volume, ensuring Cloud-Init executes reliably even with flaky internal networking.

@@ -5,6 +5,7 @@ resource "openstack_compute_instance_v2" "db_node" {
   image_name      = var.image_name
   flavor_id       = openstack_compute_flavor_v2.hotel_optimized.id
   key_pair        = var.ssh_key_name
+  config_drive    = true
   security_groups = [
     openstack_networking_secgroup_v2.sg_ssh.name,
     openstack_networking_secgroup_v2.sg_internal.name
