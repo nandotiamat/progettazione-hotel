@@ -8,13 +8,14 @@ bootcmd:
   - |
     cat <<EOF > /etc/systemd/network/10-force-mtu.link
     [Match]
-    Name=ens* eth*
+    Name=ens*
 
     [Link]
     MTUBytes=1400
     EOF
+  - udevadm control --reload
+  - udevadm trigger
   - ip link set dev ens3 mtu 1400 || true
-  - ip link set dev eth0 mtu 1400 || true
   - systemctl restart systemd-networkd
 
 # 2. Write the installation script (Standard Logic)
