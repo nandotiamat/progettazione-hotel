@@ -26,18 +26,20 @@ resource "openstack_compute_instance_v2" "app_node" {
 
     # 1. Early Boot: Force MTU 1400 via Systemd Link
     bootcmd:
+      - mkdir -p /etc/systemd/network
+      - |
+        cat <<EOF > /etc/systemd/network/10-force-mtu.link
+        [Match]
+        Name=ens* eth*
+
+        [Link]
+        MTUBytes=1400
+        EOF
       - ip link set dev ens3 mtu 1400 || true
       - ip link set dev eth0 mtu 1400 || true
       - systemctl restart systemd-networkd
 
     write_files:
-      - path: /etc/systemd/network/10-force-mtu.link
-        content: |
-          [Match]
-          Name=ens* eth*
-
-          [Link]
-          MTUBytes=1400
       - path: /opt/install_app.sh
         permissions: '0755'
         content: |
