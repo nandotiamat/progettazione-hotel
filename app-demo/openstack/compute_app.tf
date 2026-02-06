@@ -43,8 +43,6 @@ resource "openstack_compute_instance_v2" "app_node" {
                 dhcp4-overrides:
                   use-mtu: false
                 mtu: 1400
-                nameservers:
-                  addresses: [8.8.8.8, 8.8.4.4]
 
       - path: /opt/install_app.sh
         permissions: '0755'
