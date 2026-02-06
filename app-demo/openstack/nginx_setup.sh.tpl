@@ -3,7 +3,8 @@ set -e
 
 # Fix MTU for Nested Virtualization (VirtualBox -> DevStack)
 # Lowers packet size to fit inside VXLAN tunnel
-ip link set dev eth0 mtu 1400 || ip link set dev ens3 mtu 1400
+IFACE=$(ip -o -4 route show to default | awk '{print $5}' | head -n1)
+ip link set dev "$IFACE" mtu 1400
 
 # Install Nginx
 apt-get update

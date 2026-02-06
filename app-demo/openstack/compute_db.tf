@@ -20,7 +20,8 @@ resource "openstack_compute_instance_v2" "db_node" {
     set -e
     
     # Fix MTU for Nested Virtualization
-    ip link set dev eth0 mtu 1400 || ip link set dev ens3 mtu 1400
+    IFACE=$(ip -o -4 route show to default | awk '{print $5}' | head -n1)
+    ip link set dev "$IFACE" mtu 1400
     
     # Install PostgreSQL
     apt-get update
