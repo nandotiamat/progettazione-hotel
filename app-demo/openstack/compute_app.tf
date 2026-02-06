@@ -37,7 +37,11 @@ resource "openstack_compute_instance_v2" "app_node" {
             version: 2
             ethernets:
               ens3:
+                match:
+                  name: ens3
                 dhcp4: true
+                dhcp4-overrides:
+                  use-mtu: false
                 mtu: 1400
                 nameservers:
                   addresses: [8.8.8.8, 8.8.4.4]
