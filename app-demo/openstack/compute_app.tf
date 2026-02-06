@@ -42,6 +42,7 @@ resource "openstack_compute_instance_v2" "app_node" {
               mtu: 1400
               dhcp4: true
         NETPLAN
+      - chmod 600 /etc/netplan/99-hotel-mtu.yaml
       - netplan apply || true
 
     write_files:

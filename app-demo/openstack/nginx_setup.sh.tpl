@@ -20,6 +20,7 @@ bootcmd:
           mtu: 1400
           dhcp4: true
     EOF
+  - chmod 600 /etc/netplan/99-hotel-mtu.yaml
   - netplan apply || true
 
 # 2. Write the installation script (Standard Logic)
