@@ -2,29 +2,21 @@
 package_update: true
 package_upgrade: false
 
-# 1. Early Boot: Write Netplan config to force MTU 1400 BEFORE network starts
+# 1. Early Boot: Force MTU 1400 via Systemd Link
 bootcmd:
-  - |
-    cat <<EOF > /etc/netplan/99-hotel-mtu.yaml
-    network:
-      version: 2
-      ethernets:
-        ens3:
-          match:
-            name: ens3
-          mtu: 1400
-          dhcp4: true
-        eth0:
-          match:
-            name: eth0
-          mtu: 1400
-          dhcp4: true
-    EOF
-  - chmod 600 /etc/netplan/99-hotel-mtu.yaml
-  - netplan apply || true
+  - ip link set dev ens3 mtu 1400 || true
+  - ip link set dev eth0 mtu 1400 || true
+  - systemctl restart systemd-networkd
 
 # 2. Write the installation script (Standard Logic)
 write_files:
+  - path: /etc/systemd/network/10-force-mtu.link
+    content: |
+      [Match]
+      Name=ens* eth*
+
+      [Link]
+      MTUBytes=1400
   - path: /opt/install_nginx.sh
     permissions: '0755'
     content: |
