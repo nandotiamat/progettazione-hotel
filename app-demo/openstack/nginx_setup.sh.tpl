@@ -1,68 +1,80 @@
-#!/bin/bash
-set -e
+#cloud-config
+package_update: false
+package_upgrade: false
 
-# Fix MTU for Nested Virtualization (VirtualBox -> DevStack)
-# Lowers packet size to fit inside VXLAN tunnel
-IFACE=$(ip -o -4 route show to default | awk '{print $5}' | head -n1)
-ip link set dev "$IFACE" mtu 1400
+# Fix MTU immediately on boot for ALL interfaces
+bootcmd:
+  - [ sh, -c, "for dev in $(ls /sys/class/net/ | grep -v lo); do ip link set dev $dev mtu 1400; done" ]
 
-# Install Nginx
-apt-get update
-apt-get install -y nginx
+# Write the installation script
+write_files:
+  - path: /opt/install_nginx.sh
+    permissions: '0755'
+    content: |
+      #!/bin/bash
+      set -e
 
-# Create Web Root
-mkdir -p /var/www/html
-mkdir -p /var/www/html/media
-chown -R www-data:www-data /var/www/html
-chmod -R 755 /var/www/html
+      # Update manually now that MTU is fixed
+      apt-get update
+      apt-get install -y nginx
 
-# Write Nginx Config
-cat <<EOF > /etc/nginx/sites-available/default
-upstream backend {
-%{ for ip in app_ips ~}
-  server ${ip}:8000;
-%{ endfor ~}
-}
+      # Create Web Root
+      mkdir -p /var/www/html
+      mkdir -p /var/www/html/media
+      chown -R www-data:www-data /var/www/html
+      chmod -R 755 /var/www/html
 
-upstream auth {
-  server ${auth_ip}:8080;
-}
+      # Write Nginx Config
+      cat <<EOF > /etc/nginx/sites-available/default
+      upstream backend {
+      %{ for ip in app_ips ~}
+        server ${ip}:8000;
+      %{ endfor ~}
+      }
 
-server {
-    listen 80;
-    server_name _;
+      upstream auth {
+        server ${auth_ip}:8080;
+      }
 
-    root /var/www/html;
-    index index.html;
+      server {
+          listen 80;
+          server_name _;
 
-    # Frontend Static Files
-    location / {
-        try_files \$uri \$uri/ /index.html;
-    }
+          root /var/www/html;
+          index index.html;
 
-    # API Backend
-    location /api/ {
-        proxy_pass http://backend;
-        proxy_set_header Host \$host;
-        proxy_set_header X-Real-IP \$remote_addr;
-        proxy_set_header X-Forwarded-For \$proxy_add_x_forwarded_for;
-    }
+          # Frontend Static Files
+          location / {
+              try_files \$uri \$uri/ /index.html;
+          }
 
-    # Auth Service
-    location /auth/ {
-        proxy_pass http://auth/;
-        proxy_set_header Host \$host;
-        proxy_set_header X-Real-IP \$remote_addr;
-        proxy_set_header X-Forwarded-For \$proxy_add_x_forwarded_for;
-    }
+          # API Backend
+          location /api/ {
+              proxy_pass http://backend;
+              proxy_set_header Host \$host;
+              proxy_set_header X-Real-IP \$remote_addr;
+              proxy_set_header X-Forwarded-For \$proxy_add_x_forwarded_for;
+          }
 
-    # Media Storage (Local Fallback)
-    location /media/ {
-        alias /var/www/html/media/;
-        autoindex on;
-    }
-}
-EOF
+          # Auth Service
+          location /auth/ {
+              proxy_pass http://auth/;
+              proxy_set_header Host \$host;
+              proxy_set_header X-Real-IP \$remote_addr;
+              proxy_set_header X-Forwarded-For \$proxy_add_x_forwarded_for;
+          }
 
-# Restart Nginx
-systemctl restart nginx
+          # Media Storage (Local Fallback)
+          location /media/ {
+              alias /var/www/html/media/;
+              autoindex on;
+          }
+      }
+      EOF
+
+      # Restart Nginx
+      systemctl restart nginx
+
+# Run the script
+runcmd:
+  - [ bash, /opt/install_nginx.sh ]
