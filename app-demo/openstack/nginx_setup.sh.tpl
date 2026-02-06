@@ -2,24 +2,24 @@
 package_update: true
 package_upgrade: false
 
-# 1. Early Boot: Force MTU 1400 via Systemd Link
-bootcmd:
-  - mkdir -p /etc/systemd/network
-  - |
-    cat <<EOF > /etc/systemd/network/10-force-mtu.link
-    [Match]
-    Name=ens*
+# 1. Nuclear Option: Disable Cloud-Init Network Config to prevent overrides
+network:
+  config: disabled
 
-    [Link]
-    MTUBytes=1400
-    EOF
-  - udevadm control --reload
-  - udevadm trigger
-  - ip link set dev ens3 mtu 1400 || true
-  - systemctl restart systemd-networkd
-
-# 2. Write the installation script (Standard Logic)
+# 2. Write Static Netplan Config with Force MTU 1400
 write_files:
+  - path: /etc/netplan/01-netcfg.yaml
+    permissions: '0600'
+    content: |
+      network:
+        version: 2
+        ethernets:
+          ens3:
+            dhcp4: true
+            mtu: 1400
+            nameservers:
+              addresses: [8.8.8.8, 8.8.4.4]
+
   - path: /opt/install_nginx.sh
     permissions: '0755'
     content: |
