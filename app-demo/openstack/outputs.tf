@@ -14,6 +14,11 @@ output "auth_internal_ip" {
   value = openstack_compute_instance_v2.auth_node.access_ip_v4
 }
 
+output "private_key" {
+  value     = openstack_compute_keypair_v2.hotel_key.private_key
+  sensitive = true
+}
+
 # --- ENV FILE GENERATION ---
 
 resource "local_file" "openstack_env" {
