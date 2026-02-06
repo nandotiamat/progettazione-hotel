@@ -21,11 +21,28 @@ resource "openstack_compute_instance_v2" "app_node" {
 
   user_data = <<-EOF
     #cloud-config
-    package_update: false
+    package_update: true
     package_upgrade: false
 
+    # 1. Early Boot: Write Netplan config to force MTU 1400 BEFORE network starts
     bootcmd:
-      - [ sh, -c, "for dev in $(ls /sys/class/net/ | grep -v lo); do ip link set dev $dev mtu 1400; done" ]
+      - |
+        cat <<NETPLAN > /etc/netplan/99-hotel-mtu.yaml
+        network:
+          version: 2
+          ethernets:
+            ens3:
+              match:
+                name: ens3
+              mtu: 1400
+              dhcp4: true
+            eth0:
+              match:
+                name: eth0
+              mtu: 1400
+              dhcp4: true
+        NETPLAN
+      - netplan apply || true
 
     write_files:
       - path: /opt/install_app.sh
@@ -34,8 +51,13 @@ resource "openstack_compute_instance_v2" "app_node" {
           #!/bin/bash
           set -e
           
+          # Fallback: Double-check MTU
+          IFACE=$(ip -o -4 route show to default | awk '{print $5}' | head -n1)
+          if [ ! -z "$IFACE" ]; then
+            ip link set dev "$IFACE" mtu 1400
+          fi
+
           # Install Python & System Dependencies
-          apt-get update
           apt-get install -y python3 python3-pip python3-venv git
 
           # Prepare App Directory

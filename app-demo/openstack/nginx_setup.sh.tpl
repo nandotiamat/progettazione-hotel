@@ -1,12 +1,28 @@
 #cloud-config
-package_update: false
+package_update: true
 package_upgrade: false
 
-# Fix MTU immediately on boot for ALL interfaces
+# 1. Early Boot: Write Netplan config to force MTU 1400 BEFORE network starts
 bootcmd:
-  - [ sh, -c, "for dev in $(ls /sys/class/net/ | grep -v lo); do ip link set dev $dev mtu 1400; done" ]
+  - |
+    cat <<EOF > /etc/netplan/99-hotel-mtu.yaml
+    network:
+      version: 2
+      ethernets:
+        ens3:
+          match:
+            name: ens3
+          mtu: 1400
+          dhcp4: true
+        eth0:
+          match:
+            name: eth0
+          mtu: 1400
+          dhcp4: true
+    EOF
+  - netplan apply || true
 
-# Write the installation script
+# 2. Write the installation script (Standard Logic)
 write_files:
   - path: /opt/install_nginx.sh
     permissions: '0755'
@@ -14,8 +30,13 @@ write_files:
       #!/bin/bash
       set -e
 
-      # Update manually now that MTU is fixed
-      apt-get update
+      # Fallback: Double-check MTU
+      IFACE=$(ip -o -4 route show to default | awk '{print $5}' | head -n1)
+      if [ ! -z "$IFACE" ]; then
+        ip link set dev "$IFACE" mtu 1400
+      fi
+
+      # Install Nginx
       apt-get install -y nginx
 
       # Create Web Root
@@ -75,6 +96,6 @@ write_files:
       # Restart Nginx
       systemctl restart nginx
 
-# Run the script
+# 3. Run the script
 runcmd:
   - [ bash, /opt/install_nginx.sh ]
