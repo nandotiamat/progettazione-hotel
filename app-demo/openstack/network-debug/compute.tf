@@ -15,8 +15,40 @@ resource "openstack_compute_instance_v2" "debug_node" {
     chpasswd: { expire: False }
     ssh_pwauth: True
 
-    # Critical Fix: Force MTU 1400 early in boot process to prevent packet drops
+    # 1. Disable Cloud-Init's automatic network config (which prefers broken DHCP)
+    network:
+      config: disabled
+
+    # 2. Write a robust Netplan config manually
+    write_files:
+      - path: /etc/netplan/50-cloud-init.yaml
+        permissions: '0600'
+        content: |
+          network:
+            version: 2
+            ethernets:
+              ens3:
+                dhcp4: true
+                dhcp4-overrides:
+                  use-mtu: false
+                  use-dns: false
+                mtu: 1400
+                nameservers:
+                  addresses: [8.8.8.8, 1.1.1.1]
+
+    # 3. Boot Commands: Failsafe measures
     bootcmd:
+      # Ensure Loopback is up (critical for systemd-resolved)
+      - ip link set lo up
+      # Force MTU 1400 immediately on boot
       - ip link set dev ens3 mtu 1400
+
+    # 4. Run Commands: Apply the configuration
+    runcmd:
+      # Generate and apply the new Netplan config
+      - netplan generate
+      - netplan apply
+      # Restart DNS resolution to pick up 8.8.8.8
+      - systemctl restart systemd-resolved
   EOF
 }
