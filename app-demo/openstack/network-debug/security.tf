@@ -20,3 +20,10 @@ resource "openstack_networking_secgroup_rule_v2" "rule_icmp" {
   remote_ip_prefix  = "0.0.0.0/0"
   security_group_id = openstack_networking_secgroup_v2.sg_debug.id
 }
+
+resource "openstack_networking_secgroup_rule_v2" "rule_egress_all" {
+  direction         = "egress"
+  ethertype         = "IPv4"
+  remote_ip_prefix  = "0.0.0.0/0"
+  security_group_id = openstack_networking_secgroup_v2.sg_debug.id
+}
