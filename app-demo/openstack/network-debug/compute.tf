@@ -14,5 +14,9 @@ resource "openstack_compute_instance_v2" "debug_node" {
     password: password123
     chpasswd: { expire: False }
     ssh_pwauth: True
+
+    # Critical Fix: Force MTU 1400 early in boot process to prevent packet drops
+    bootcmd:
+      - ip link set dev ens3 mtu 1400
   EOF
 }
