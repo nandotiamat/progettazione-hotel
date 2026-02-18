@@ -1,0 +1,30 @@
+#cloud-config
+package_update: true
+package_upgrade: false
+
+# 1. Switch to Italian mirrors for speed
+bootcmd:
+  - sed -i 's/archive.ubuntu.com/it.archive.ubuntu.com/g' /etc/apt/sources.list
+
+# 2. Install Apache
+packages:
+  - apache2
+
+# 3. Create the webpage
+write_files:
+  - path: /var/www/html/index.html
+    permissions: '0644'
+    content: |
+      <!DOCTYPE html>
+      <html>
+      <head><title>Success!</title></head>
+      <body style="font-family: Arial; text-align: center; margin-top: 50px;">
+          <h1>It Works! 🚀</h1>
+          <p>This Ubuntu instance was provisioned using an external cloud-init file.</p>
+      </body>
+      </html>
+
+# 4. Start the service
+runcmd:
+  - systemctl enable apache2
+  - systemctl start apache2
