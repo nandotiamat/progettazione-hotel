@@ -45,6 +45,10 @@ resource "openstack_compute_instance_v2" "debug_node" {
               echo "Server on OpenStack (DevStack)" > index.html
               python3 -m http.server 8000 &
               EOF
+
+  depends_on = [
+    openstack_networking_subnet_v2.private_subnet
+  ]
 }
 
 # --- 4. FLOATING IP (Per accedere dal tuo browser/terminale) ---

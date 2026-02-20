@@ -2,6 +2,14 @@
 # Come in AWS, questo rimane privato di default se non impostiamo container_read.
 resource "openstack_objectstorage_container_v1" "media_container" {
   name = "my-app-media-assets"
+  # LA REGOLA FONDAMENTALE (ACL):
+  # "*:media_reader" significa: permetti la lettura a qualsiasi utente 
+  # appartenente a questo progetto (*) che possiede il ruolo "media_reader".
+  container_read = "media_reader, media_uploader"
+  container_write = "media_uploader"
+
+  # Dipendenza esplicita: assicuriamoci che il ruolo esista prima di creare il container
+  depends_on = [openstack_identity_role_v3.media_reader_role, openstack_identity_role_v3.media_uploader_role]
 }
 
 
@@ -48,6 +56,54 @@ resource "openstack_objectstorage_object_v1" "media_seed" {
   )
 }
 
+
+# --- CREAZIONE DEL RUOLO ---
+resource "openstack_identity_role_v3" "media_reader_role" {
+  name = "media_reader"
+}
+
+resource "openstack_identity_role_v3" "media_uploader_role" {
+  name = "media_uploader"
+}
+
+# === CREAZIONE UTENTI DEBUG ===
+
+# --- CREAZIONE UTENTE DI SERVIZIO ---
+# Questo è l'utente "dummy" che l'app userà per leggere i file
+resource "openstack_identity_user_v3" "media_reader_user" {
+  name               = "app_frontend_reader"
+  default_project_id = data.openstack_identity_project_v3.current_project.id
+  password           = "PasswordSicura123!" # In produzione usiamo delle variabili
+}
+
+# --- ASSEGNAZIONE DEL RUOLO ALL'UTENTE ---
+resource "openstack_identity_role_assignment_v3" "reader_role_assignment" {
+  user_id    = openstack_identity_user_v3.media_reader_user.id
+  project_id = data.openstack_identity_project_v3.current_project.id
+  role_id    = openstack_identity_role_v3.media_reader_role.id
+}
+
+# === ===
+
+# --- CREAZIONE UTENTE DI SERVIZIO ---
+# Questo è l'utente "dummy" che l'app userà per leggere i file
+resource "openstack_identity_user_v3" "media_uploader_user" {
+  name               = "app_frontend_uploader"
+  default_project_id = data.openstack_identity_project_v3.current_project.id
+  password           = "PasswordSicura123!" # In produzione usiamo delle variabili
+}
+
+# --- ASSEGNAZIONE DEL RUOLO ALL'UTENTE ---
+resource "openstack_identity_role_assignment_v3" "uploader_role_assignment" {
+  user_id    = openstack_identity_user_v3.media_uploader_user.id
+  project_id = data.openstack_identity_project_v3.current_project.id
+  role_id    = openstack_identity_role_v3.media_uploader_role.id
+}
+
+# === ===
+
+
+# === CREAZIONE UTENTI DEBUG ===
 # --- OUTPUTS ---
 
 output "swift_media_container_name" {
