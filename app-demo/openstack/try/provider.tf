@@ -7,6 +7,3 @@ terraform {
   }
 }
 
-provider "openstack" {
-  cloud = "hotel-admin"
-}

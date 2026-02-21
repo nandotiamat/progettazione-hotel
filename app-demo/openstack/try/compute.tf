@@ -51,6 +51,34 @@ resource "openstack_compute_instance_v2" "debug_node" {
   ]
 }
 
+resource "openstack_compute_instance_v2" "debug_node2" {
+  name      = "myapp-manual-debug-node2"
+  image_name      = var.image_name
+  flavor_name     = var.flavor_name
+  key_pair  = openstack_compute_keypair_v2.my_keypair.name
+  
+  # IMPORTANTE: In questa risorsa specifica di Terraform per OpenStack, 
+  # si usa il NOME del security group, non l'ID!
+  security_groups = [openstack_networking_secgroup_v2.backend_sg.name]
+
+  # La colleghiamo alla nostra rete privata creata al passo precedente
+  network {
+    uuid = openstack_networking_network_v2.private_net.id
+  }
+
+  # Lo stesso script del tuo codice AWS
+  user_data = <<-EOF
+              #!/bin/bash
+              echo "Server on OpenStack (DevStack)" > index.html
+              python3 -m http.server 8000 &
+              EOF
+
+  depends_on = [
+    openstack_networking_subnet_v2.private_subnet
+  ]
+}
+
+
 # --- 4. FLOATING IP (Per accedere dal tuo browser/terminale) ---
 # "Noleggiamo" un IP dalla rete pubblica
 resource "openstack_networking_floatingip_v2" "debug_fip" {
