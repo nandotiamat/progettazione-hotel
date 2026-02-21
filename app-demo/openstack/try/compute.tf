@@ -136,3 +136,43 @@ output "db_private_ip" {
   description = "L'IP privato del database (es. 10.0.1.X) da passare alle app backend"
   value       = openstack_compute_instance_v2.db_node.access_ip_v4
 }
+
+# === BACKEND ===
+
+resource "openstack_compute_instance_v2" "backend_node" {
+  name      = "myapp-backend-node"
+  image_name      = var.image_name
+  flavor_name     = var.flavor_name
+  key_pair  = openstack_compute_keypair_v2.my_keypair.name
+  
+  # IMPORTANTE: In questa risorsa specifica di Terraform per OpenStack, 
+  # si usa il NOME del security group, non l'ID!
+  security_groups = [openstack_networking_secgroup_v2.backend_sg.name]
+
+  # La colleghiamo alla nostra rete privata creata al passo precedente
+  network {
+    uuid = openstack_networking_network_v2.private_net.id
+  }
+
+  user_data = file("${path.module}/backend-init-node.yaml")
+
+  depends_on = [
+    openstack_networking_subnet_v2.private_subnet
+  ]
+}
+
+# 1. Creiamo l'indirizzo IP pubblico dal pool esterno
+resource "openstack_networking_floatingip_v2" "backend_fip" {
+  pool = data.openstack_networking_network_v2.ext_net.name
+}
+
+# 2. Lo associamo all'istanza del backend
+resource "openstack_compute_floatingip_associate_v2" "backend_fip_assoc" {
+  floating_ip = openstack_networking_floatingip_v2.backend_fip.address
+  instance_id = openstack_compute_instance_v2.backend_node.id
+}
+
+output "backend_node_public_ip" {
+  description = "Il Floating IP per collegarti via browser o SSH"
+  value       = openstack_networking_floatingip_v2.backend_fip.address
+}
