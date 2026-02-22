@@ -1,0 +1,32 @@
+# --- TERRAFORM SPECIFIC ---
+# Cartella dei binari e dei provider (pesante e scaricabile con 'init')
+.terraform/
+
+# File di stato (CONTENGONO LE PASSWORD IN CHIARO!)
+# Questi non devono MAI essere caricati su Git
+*.tfstate
+*.tfstate.backup
+*.tfstate.lock.info
+
+# Variabili locali (se userai file .tfvars per le password)
+*.tfvars
+*.tfvars.json
+override.tf
+override.tf.json
+*_override.tf
+*_override.tf.json
+
+# --- OPENSTACK & SECRETS SPECIFIC ---
+# Il file clouds.yaml dell'admin e quelli generati da Terraform
+clouds.yaml
+clouds-generated.yaml
+app-clouds.yaml
+openrc
+
+# Log di crash di Terraform
+crash.log
+
+# --- SYSTEM SPECIFIC ---
+.DS_Store
+.env
+.venv/

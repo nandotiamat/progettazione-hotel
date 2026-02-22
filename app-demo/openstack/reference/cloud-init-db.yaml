@@ -1,0 +1,45 @@
+#cloud-config
+package_update: true
+
+# Installiamo PostgreSQL
+packages:
+  - postgresql
+  - postgresql-contrib
+
+# Creiamo i file SQL temporanei per configurare il DB
+write_files:
+  - path: /tmp/setup_db.sql
+    permissions: '0644'
+    content: |
+      CREATE USER dbadmin WITH PASSWORD 'test';
+      CREATE DATABASE myappdb OWNER dbadmin;
+  
+  - path: /tmp/schema.sql
+    permissions: '0644'
+    content: |
+      -- Le tue tabelle iniziali (migrations)
+      CREATE TABLE IF NOT EXISTS users (
+          id SERIAL PRIMARY KEY,
+          email VARCHAR(255) UNIQUE NOT NULL,
+          created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      );
+      INSERT INTO users (email) VALUES ('admin@myapp.local');
+
+runcmd:
+  # 1. Sostituiamo l'asterisco con '14' che è la versione di default su Ubuntu 22.04
+  - sed -i "s/#listen_addresses = 'localhost'/listen_addresses = '*'/g" /etc/postgresql/14/main/postgresql.conf
+
+  # 2. Usiamo sh -c per assicurarci che il reindirizzamento >> funzioni alla perfezione
+  - sh -c 'echo "host all all 10.0.1.0/24 md5" >> /etc/postgresql/14/main/pg_hba.conf'
+
+  # 3. Riavvia il servizio per applicare le modifiche di rete
+  - systemctl restart postgresql
+  
+  - wget https://raw.githubusercontent.com/nandotiamat/progettazione-hotel/refs/heads/main/app-demo/terraform/schema.sql -O /tmp/schema.sql
+
+  # 4. Esegui la creazione dell'utente e del database
+  - sudo -u postgres psql -f /tmp/setup_db.sql
+  
+  # 5. Applica le migrations sul database appena creato
+  - sudo -u postgres psql -d myappdb -f /tmp/schema.sql
+

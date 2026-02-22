@@ -1,0 +1,51 @@
+#cloud-config
+package_update: true
+package_upgrade: true
+
+# 1. Installazione dipendenze di sistema
+packages:
+  - python3-pip
+  - python3-dev
+  - gcc
+  - libpq-dev
+  - git
+
+write_files:
+  - path: /etc/systemd/system/fastapi-app.service
+    permissions: '0644'
+    content: |
+      [Unit]
+      Description=FastAPI App Service
+      After=network.target
+
+      [Service]
+      User=ubuntu
+      Group=ubuntu
+      # Percorso aggiornato: punta alla sottocartella backend
+      WorkingDirectory=/home/ubuntu/repo/app-demo/backend
+      Environment="PATH=/home/ubuntu/.local/bin"
+      # TODO: add terraform template that injects ips and stuff
+      Environment="AWS_ENDPOINT_URL=http://tuo-indirizzo-s3"
+      Environment="S3_MEDIA_BUCKET=my-app-media-assets"
+      Environment="AWS_ACCESS_KEY_ID=tuachiave"
+      Environment="AWS_SECRET_ACCESS_KEY=tuasegreta"
+      # Environment="DATABASE_URL=postgresql://user:pass@IP_DB:5432/dbname" # Esempio per il futuro
+      ExecStart=/home/ubuntu/.local/bin/uvicorn app.main:app --host 0.0.0.0 --port 8000
+      Restart=always
+
+      [Install]
+      WantedBy=multi-user.target
+
+runcmd:
+  # 2. Clonazione del repository in una cartella generica 'repo'
+  - [ git, clone, "https://github.com/nandotiamat/progettazione-hotel.git", "/home/ubuntu/repo" ]
+  - [ chown, -R, "ubuntu:ubuntu", "/home/ubuntu/repo" ]
+
+  # 3. Installazione dipendenze Python usando il percorso specifico
+  - sudo -u ubuntu pip3 install --no-cache-dir --upgrade pip
+  - sudo -u ubuntu pip3 install --no-cache-dir -r /home/ubuntu/repo/app-demo/backend/requirements.txt
+
+  # 4. Avvio del servizio
+  - systemctl daemon-reload
+  - systemctl enable fastapi-app.service
+  - systemctl start fastapi-app.service
