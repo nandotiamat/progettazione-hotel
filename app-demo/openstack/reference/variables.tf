@@ -15,7 +15,7 @@ variable "image_name" {
 
 variable "flavor_name" {
   type    = string
-  default = "ds2G"
+  default = "hotel_flavor"
   # default = "m1.small" 
 }
 
