@@ -9,7 +9,7 @@ resource "openstack_compute_instance_v2" "frontend" {
 
   # IMPORTANTE: In questa risorsa specifica di Terraform per OpenStack, 
   # si usa il NOME del security group, non l'ID!
-  security_groups = [openstack_networking_secgroup_v2.backend_sg.name]
+  security_groups = [openstack_networking_secgroup_v2.frontend_sg.name]
 
   network {
     uuid = openstack_networking_network_v2.hotel_net.id

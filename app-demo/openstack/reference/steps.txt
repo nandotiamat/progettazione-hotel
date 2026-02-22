@@ -1,0 +1,41 @@
+============================================================
+PROCEDURA DI DEPLOY - HOTEL MANAGEMENT SYSTEM (OPENSTACK)
+============================================================
+
+Segui questi passaggi nell'ordine esatto per configurare 
+l'ambiente e lanciare l'infrastruttura con Terraform.
+
+--- FASE 1: PREPARAZIONE AMBIENTE (MANUALE) ---
+
+1. Autenticazione Admin:
+   Apri il terminale e carica le credenziali admin di DevStack:
+   $ source openrc admin admin
+
+2. Creazione Progetto Hotel:
+   Crea il progetto su cui Terraform andrà a lavorare:
+   $ openstack project create --domain default hotel
+
+3. Generazione Chiavi SSH:
+   Esegui il tuo script di setup chiavi (assicurati che crei 
+   'hotel-key' e 'hotel-key.pub' nella cartella ./keys/):
+   $ chmod +x setup_keys.sh
+   $ ./setup_keys.sh
+
+
+--- FASE 2: DEPLOY CON TERRAFORM ---
+
+4. Inizializzazione:
+   Scarica i provider necessari (OpenStack):
+   $ terraform init
+
+5. Validazione Sintattica:
+   Verifica che non ci siano errori di battitura nel codice:
+   $ terraform validate
+
+6. Pianificazione:
+   Controlla l'elenco delle risorse che verranno create:
+   $ terraform plan
+
+7. Applicazione:
+   Crea l'infrastruttura reale su DevStack:
+   $ terraform apply -auto-approve
