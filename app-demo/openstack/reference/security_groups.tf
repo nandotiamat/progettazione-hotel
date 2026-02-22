@@ -37,8 +37,8 @@ resource "openstack_networking_secgroup_rule_v2" "backend_http_from_frontend" {
   direction         = "ingress"
   ethertype         = "IPv4"
   protocol          = "tcp"
-  port_range_min    = 80
-  port_range_max    = 80
+  port_range_min    = 8000
+  port_range_max    = 8000
   remote_group_id   = openstack_networking_secgroup_v2.frontend_sg.id
   security_group_id = openstack_networking_secgroup_v2.backend_sg.id
 }
