@@ -35,23 +35,23 @@ resource "openstack_objectstorage_container_v1" "media" {
 
 locals {
   media_files = {
-    "prop01/front.png"    = "${path.module}/../seed_media/prop01_front.png"
-    "prop02/front.png"    = "${path.module}/../seed_media/prop02_front.png"
-    "prop03/front.png"    = "${path.module}/../seed_media/prop03_front.png"
-    "prop03/interior.png" = "${path.module}/../seed_media/prop03_interior.png"
-    "prop03/hall.png"     = "${path.module}/../seed_media/prop03_hall.png"
-    "prop04/front.png"    = "${path.module}/../seed_media/prop04_front.png"
-    "prop05/front.png"    = "${path.module}/../seed_media/prop05_front.png"
-    "prop06/front.png"    = "${path.module}/../seed_media/prop06_front.png"
-    "prop07/front.png"    = "${path.module}/../seed_media/prop07_front.png"
-    "prop07/hall.png"     = "${path.module}/../seed_media/prop07_hall.png"
-    "prop07/interior.png" = "${path.module}/../seed_media/prop07_interior.png"
-    "prop08/front.png"    = "${path.module}/../seed_media/prop08_front.png"
-    "prop08/hall.png"     = "${path.module}/../seed_media/prop08_hall.png"
-    "prop09/front.png"    = "${path.module}/../seed_media/prop09_front.png"
-    "prop09/pool.png"     = "${path.module}/../seed_media/prop09_pool.png"
-    "prop10/front.png"    = "${path.module}/../seed_media/prop10_front.png"
-    "prop10/hall.png"     = "${path.module}/../seed_media/prop10_hall.png"
+    "prop01/front.png"    = "${path.module}/terraform_content/seed_media/prop01_front.png"
+    "prop02/front.png"    = "${path.module}/terraform_content/seed_media/prop02_front.png"
+    "prop03/front.png"    = "${path.module}/terraform_content/seed_media/prop03_front.png"
+    "prop03/interior.png" = "${path.module}/terraform_content/seed_media/prop03_interior.png"
+    "prop03/hall.png"     = "${path.module}/terraform_content/seed_media/prop03_hall.png"
+    "prop04/front.png"    = "${path.module}/terraform_content/seed_media/prop04_front.png"
+    "prop05/front.png"    = "${path.module}/terraform_content/seed_media/prop05_front.png"
+    "prop06/front.png"    = "${path.module}/terraform_content/seed_media/prop06_front.png"
+    "prop07/front.png"    = "${path.module}/terraform_content/seed_media/prop07_front.png"
+    "prop07/hall.png"     = "${path.module}/terraform_content/seed_media/prop07_hall.png"
+    "prop07/interior.png" = "${path.module}/terraform_content/seed_media/prop07_interior.png"
+    "prop08/front.png"    = "${path.module}/terraform_content/seed_media/prop08_front.png"
+    "prop08/hall.png"     = "${path.module}/terraform_content/seed_media/prop08_hall.png"
+    "prop09/front.png"    = "${path.module}/terraform_content/seed_media/prop09_front.png"
+    "prop09/pool.png"     = "${path.module}/terraform_content/seed_media/prop09_pool.png"
+    "prop10/front.png"    = "${path.module}/terraform_content/seed_media/prop10_front.png"
+    "prop10/hall.png"     = "${path.module}/terraform_content/seed_media/prop10_hall.png"
   }
 }
 
@@ -103,12 +103,17 @@ resource "openstack_compute_instance_v2" "db_server" {
   image_id        = data.openstack_images_image_v2.app_image.id
   flavor_id       = data.openstack_compute_flavor_v2.app_flavor.id
   security_groups = [openstack_networking_secgroup_v2.db_sg.name]
+  key_pair        = openstack_compute_keypair_v2.hotel_keypair.name
 
   # Posizionato nella subnet privata (isolato, come RDS)
   network {
     uuid        = openstack_networking_network_v2.main.id
     fixed_ip_v4 = cidrhost(openstack_networking_subnet_v2.private_1.cidr, 100)
   }
+
+  depends_on = [
+    openstack_networking_subnet_v2.private_1
+  ]
 
   user_data = <<-EOF
               #!/bin/bash

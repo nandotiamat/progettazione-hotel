@@ -31,7 +31,7 @@ provider "openstack" {
 # --- FILE GENERATION ---
 
 resource "local_file" "dotenv" {
-  filename = "/config/openstack.env"
+  filename = "${path.module}/config/openstack.env"
   content  = <<EOF
 # File generato automaticamente da Terraform per OpenStack/DevStack
 

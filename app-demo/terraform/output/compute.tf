@@ -8,9 +8,10 @@
 
 # Load Balancer sulla subnet pubblica (equivalente di aws_lb ALB)
 resource "openstack_lb_loadbalancer_v2" "app_lb" {
-  name           = "myapp-load-balancer"
-  vip_subnet_id  = openstack_networking_subnet_v2.public_1.id
-  admin_state_up = true
+  name                  = "myapp-load-balancer"
+  vip_subnet_id         = openstack_networking_subnet_v2.public_1.id
+  admin_state_up        = true
+  loadbalancer_provider = "ovn"
 
   security_group_ids = [openstack_networking_secgroup_v2.lb_sg.id]
 }
@@ -18,7 +19,7 @@ resource "openstack_lb_loadbalancer_v2" "app_lb" {
 # Listener HTTP sulla porta 80 (equivalente di aws_lb_listener)
 resource "openstack_lb_listener_v2" "http" {
   name            = "myapp-http-listener"
-  protocol        = "HTTP"
+  protocol        = "TCP"
   protocol_port   = 80
   loadbalancer_id = openstack_lb_loadbalancer_v2.app_lb.id
   admin_state_up  = true
@@ -27,23 +28,20 @@ resource "openstack_lb_listener_v2" "http" {
 # Pool di backend (equivalente di aws_lb_target_group)
 resource "openstack_lb_pool_v2" "app_pool" {
   name        = "myapp-backend-pool"
-  protocol    = "HTTP"
-  lb_method   = "ROUND_ROBIN"
+  protocol    = "TCP"
+  lb_method   = "SOURCE_IP_PORT"
   listener_id = openstack_lb_listener_v2.http.id
 }
 
 # Health Monitor (equivalente dell'health_check nel target group AWS)
 # Soglie rilassate per DevStack (come nel design originale per LocalStack)
 resource "openstack_lb_monitor_v2" "app_monitor" {
-  name           = "myapp-health-monitor"
-  pool_id        = openstack_lb_pool_v2.app_pool.id
-  type           = "HTTP"
-  http_method    = "GET"
-  url_path       = "/"
-  expected_codes = "200-499"
-  delay          = 10
-  timeout        = 5
-  max_retries    = 10
+  name        = "myapp-health-monitor"
+  pool_id     = openstack_lb_pool_v2.app_pool.id
+  type        = "TCP"
+  delay       = 10
+  timeout     = 5
+  max_retries = 10
 }
 
 # --- DATA SOURCES (Immagine e Flavor) ---
@@ -69,6 +67,7 @@ resource "openstack_compute_instance_v2" "backend" {
   image_id        = data.openstack_images_image_v2.app_image.id
   flavor_id       = data.openstack_compute_flavor_v2.app_flavor.id
   security_groups = [openstack_networking_secgroup_v2.compute_sg.name]
+  key_pair        = openstack_compute_keypair_v2.hotel_keypair.name
 
   # Collegamento alla subnet privata (alternando tra le due)
   network {
@@ -93,7 +92,7 @@ resource "openstack_lb_member_v2" "backend" {
   count         = 2
   pool_id       = openstack_lb_pool_v2.app_pool.id
   address       = openstack_compute_instance_v2.backend[count.index].access_ip_v4
-  protocol_port = 80
+  protocol_port = 8000
   subnet_id     = count.index % 2 == 0 ? openstack_networking_subnet_v2.private_1.id : openstack_networking_subnet_v2.private_2.id
 }
 
@@ -105,10 +104,12 @@ resource "openstack_compute_instance_v2" "debug_node" {
   name            = "myapp-debug-node"
   image_id        = data.openstack_images_image_v2.app_image.id
   flavor_id       = data.openstack_compute_flavor_v2.app_flavor.id
-  security_groups = [openstack_networking_secgroup_v2.compute_sg.name]
+  security_groups = [openstack_networking_secgroup_v2.bastion_sg.name]
+  key_pair        = openstack_compute_keypair_v2.hotel_keypair.name
 
   network {
-    uuid = openstack_networking_network_v2.main.id
+    uuid        = openstack_networking_network_v2.main.id
+    fixed_ip_v4 = cidrhost(openstack_networking_subnet_v2.private_1.cidr, 99)
   }
 
   user_data = <<-EOF
@@ -118,7 +119,6 @@ resource "openstack_compute_instance_v2" "debug_node" {
               EOF
 }
 
-# Skipped: CloudWatch alarm + autoscaling policy (no Ceilometer/Aodh in DevStack)
 
 # --- OUTPUTS ---
 

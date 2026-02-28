@@ -76,6 +76,18 @@ resource "openstack_networking_router_interface_v2" "public_2" {
   subnet_id = openstack_networking_subnet_v2.public_2.id
 }
 
+resource "openstack_networking_router_interface_v2" "private_1" {
+  router_id = openstack_networking_router_v2.main.id
+  subnet_id = openstack_networking_subnet_v2.private_1.id
+}
+
+resource "openstack_networking_router_interface_v2" "private_2" {
+  router_id = openstack_networking_router_v2.main.id
+  subnet_id = openstack_networking_subnet_v2.private_2.id
+}
+
+# Le subnet private NON sono collegate al router (isolate, come nel design AWS senza NAT)
+
 # Le subnet private NON sono collegate al router (isolate, come nel design AWS senza NAT)
 
 # --- OUTPUTS ---

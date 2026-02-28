@@ -69,7 +69,7 @@ resource "openstack_networking_secgroup_rule_v2" "compute_ingress_ssh" {
   protocol          = "tcp"
   port_range_min    = 22
   port_range_max    = 22
-  remote_ip_prefix  = "10.0.0.0/16"
+  remote_group_id   = openstack_networking_secgroup_v2.bastion_sg.id
   security_group_id = openstack_networking_secgroup_v2.compute_sg.id
 }
 
@@ -89,6 +89,24 @@ resource "openstack_networking_secgroup_rule_v2" "db_ingress_postgres" {
   port_range_max    = 5432
   remote_group_id   = openstack_networking_secgroup_v2.compute_sg.id
   security_group_id = openstack_networking_secgroup_v2.db_sg.id
+}
+
+# --- SECURITY GROUP PER IL BASTION HOST ---
+
+resource "openstack_networking_secgroup_v2" "bastion_sg" {
+  name        = "bastion-security-group"
+  description = "Permette l'accesso SSH dall'esterno al Bastion Host"
+}
+
+# Ingress SSH (porta 22) da Internet
+resource "openstack_networking_secgroup_rule_v2" "bastion_ingress_ssh" {
+  direction         = "ingress"
+  ethertype         = "IPv4"
+  protocol          = "tcp"
+  port_range_min    = 22
+  port_range_max    = 22
+  remote_ip_prefix  = "0.0.0.0/0"
+  security_group_id = openstack_networking_secgroup_v2.bastion_sg.id
 }
 
 # --- OUTPUTS ---

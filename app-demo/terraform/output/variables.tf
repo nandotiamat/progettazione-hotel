@@ -50,11 +50,11 @@ variable "db_password" {
 variable "image_name" {
   description = "Nome dell'immagine Glance per le istanze compute"
   type        = string
-  default     = "cirros-0.6.3-x86_64-disk"
+  default     = "ubuntu-22.04"
 }
 
 variable "flavor_name" {
   description = "Nome del flavor per le istanze compute"
   type        = string
-  default     = "m1.small"
+  default     = "hotel_flavor"
 }
