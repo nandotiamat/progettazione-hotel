@@ -1,0 +1,28 @@
+#cloud-config
+# Cloud-init per il nodo backend (FastAPI + Uvicorn)
+
+package_update: true
+packages:
+  - python3
+  - python3-pip
+  - python3-venv
+
+write_files:
+  - path: /opt/api/main.py
+    content: |
+      from fastapi import FastAPI
+
+      app = FastAPI()
+
+      @app.get("/")
+      def root():
+          return {"status": "ok", "service": "hotel-backend"}
+
+      @app.get("/health")
+      def health():
+          return {"status": "healthy"}
+
+runcmd:
+  - python3 -m venv /opt/api/venv
+  - /opt/api/venv/bin/pip install fastapi uvicorn
+  - cd /opt/api && nohup /opt/api/venv/bin/uvicorn main:app --host 0.0.0.0 --port 80 &
