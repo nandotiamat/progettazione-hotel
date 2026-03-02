@@ -1,0 +1,13 @@
+#cloud-config
+package_update: true
+packages:
+  - nginx
+
+write_files:
+  - path: /var/www/html/index.html
+    permissions: '0644'
+    content: |
+      Frontend node ${index}
+
+runcmd:
+  - systemctl enable --now nginx

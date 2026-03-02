@@ -1,0 +1,31 @@
+#cloud-config
+package_update: true
+packages:
+  - postgresql
+
+write_files:
+  - path: /opt/hotel_db/init.sql
+    permissions: '0600'
+    owner: postgres:postgres
+    content: |
+      DO $$
+      BEGIN
+        IF NOT EXISTS (SELECT FROM pg_catalog.pg_roles WHERE rolname = '${db_user}') THEN
+          CREATE ROLE ${db_user} LOGIN PASSWORD '${db_password}';
+        END IF;
+      END
+      $$;
+
+      DO $$
+      BEGIN
+        IF NOT EXISTS (SELECT FROM pg_database WHERE datname = '${db_name}') THEN
+          CREATE DATABASE ${db_name} OWNER ${db_user};
+        END IF;
+      END
+      $$;
+
+runcmd:
+  - sed -i "s/^#\?listen_addresses\s*=.*/listen_addresses = '*' /" /etc/postgresql/*/main/postgresql.conf
+  - bash -lc "printf '%s\n' 'host ${db_name} ${db_user} 10.0.1.0/24 md5' >> /etc/postgresql/*/main/pg_hba.conf"
+  - systemctl restart postgresql
+  - sudo -u postgres psql -f /opt/hotel_db/init.sql

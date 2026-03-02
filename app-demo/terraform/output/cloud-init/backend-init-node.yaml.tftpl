@@ -1,0 +1,40 @@
+#cloud-config
+package_update: true
+packages:
+  - python3
+  - python3-pip
+
+write_files:
+  - path: /opt/hotel_backend/app.py
+    permissions: '0644'
+    content: |
+      from fastapi import FastAPI
+
+      app = FastAPI()
+
+      @app.get("/")
+      def root():
+          return {"status": "ok"}
+
+  - path: /etc/systemd/system/hotel-backend.service
+    permissions: '0644'
+    content: |
+      [Unit]
+      Description=Hotel demo backend (FastAPI)
+      After=network-online.target
+      Wants=network-online.target
+
+      [Service]
+      Type=simple
+      WorkingDirectory=/opt/hotel_backend
+      ExecStart=/usr/bin/python3 -m uvicorn app:app --host 0.0.0.0 --port 80
+      Restart=always
+
+      [Install]
+      WantedBy=multi-user.target
+
+runcmd:
+  - python3 -m pip install --upgrade pip
+  - python3 -m pip install fastapi uvicorn
+  - systemctl daemon-reload
+  - systemctl enable --now hotel-backend.service
