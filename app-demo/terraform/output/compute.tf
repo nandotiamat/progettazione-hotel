@@ -65,7 +65,7 @@ resource "openstack_compute_instance_v2" "frontend" {
   image_id        = openstack_images_image_v2.ubuntu_jammy.id
   flavor_id       = openstack_compute_flavor_v2.hotel_flavor.id
   key_pair        = openstack_compute_keypair_v2.hotel_keypair.name
-  security_groups = [openstack_networking_secgroup_v2.frontend_sg.name]
+  security_groups = [openstack_networking_secgroup_v2.frontend_sg.id]
 
   network {
     uuid = openstack_networking_network_v2.hotel_net.id
@@ -84,7 +84,7 @@ resource "openstack_compute_instance_v2" "backend" {
   image_id        = openstack_images_image_v2.ubuntu_jammy.id
   flavor_id       = openstack_compute_flavor_v2.hotel_flavor.id
   key_pair        = openstack_compute_keypair_v2.hotel_keypair.name
-  security_groups = [openstack_networking_secgroup_v2.backend_sg.name]
+  security_groups = [openstack_networking_secgroup_v2.backend_sg.id]
 
   network {
     uuid = openstack_networking_network_v2.hotel_net.id
@@ -101,7 +101,7 @@ resource "openstack_compute_instance_v2" "database" {
   image_id        = openstack_images_image_v2.ubuntu_jammy.id
   flavor_id       = openstack_compute_flavor_v2.hotel_flavor.id
   key_pair        = openstack_compute_keypair_v2.hotel_keypair.name
-  security_groups = [openstack_networking_secgroup_v2.database_sg.name]
+  security_groups = [openstack_networking_secgroup_v2.database_sg.id]
 
   network {
     uuid = openstack_networking_network_v2.hotel_net.id
@@ -123,7 +123,7 @@ resource "openstack_compute_instance_v2" "bastion" {
   image_id        = data.openstack_images_image_v2.cirros.id
   flavor_id       = openstack_compute_flavor_v2.hotel_flavor.id
   key_pair        = openstack_compute_keypair_v2.hotel_keypair.name
-  security_groups = [openstack_networking_secgroup_v2.bastion_sg.name]
+  security_groups = [openstack_networking_secgroup_v2.bastion_sg.id]
 
   network {
     uuid = openstack_networking_network_v2.hotel_net.id
@@ -132,10 +132,14 @@ resource "openstack_compute_instance_v2" "bastion" {
 
 # --- ASSOCIAZIONE FLOATING IP BASTION ---
 
-# Associa la floating IP allocata in network.tf alla porta di rete del bastion
+data "openstack_networking_port_v2" "bastion_port" {
+  device_id  = openstack_compute_instance_v2.bastion.id
+  network_id = openstack_networking_network_v2.hotel_net.id
+}
+
 resource "openstack_networking_floatingip_associate_v2" "bastion_fip_assoc" {
   floating_ip = openstack_networking_floatingip_v2.bastion_fip.address
-  port_id     = openstack_compute_instance_v2.bastion.network[0].port
+  port_id     = data.openstack_networking_port_v2.bastion_port.id
 }
 
 # --- OUTPUTS ---

@@ -102,6 +102,28 @@ resource "openstack_networking_secgroup_rule_v2" "database_postgres_from_backend
   remote_group_id   = openstack_networking_secgroup_v2.backend_sg.id
 }
 
+# Regola ingress: HTTP (porta 80) dal bastion security group
+resource "openstack_networking_secgroup_rule_v2" "backend_http_from_bastion" {
+  security_group_id = openstack_networking_secgroup_v2.backend_sg.id
+  direction         = "ingress"
+  ethertype         = "IPv4"
+  protocol          = "tcp"
+  port_range_min    = 80
+  port_range_max    = 80
+  remote_group_id   = openstack_networking_secgroup_v2.bastion_sg.id
+}
+
+# Regola ingress: SSH (porta 22) dal bastion security group
+resource "openstack_networking_secgroup_rule_v2" "backend_ssh_from_bastion" {
+  security_group_id = openstack_networking_secgroup_v2.backend_sg.id
+  direction         = "ingress"
+  ethertype         = "IPv4"
+  protocol          = "tcp"
+  port_range_min    = 22
+  port_range_max    = 22
+  remote_group_id   = openstack_networking_secgroup_v2.bastion_sg.id
+}
+
 # --- OUTPUTS ---
 
 output "bastion_sg_id" {

@@ -1,0 +1,11 @@
+clouds:
+  devstack:
+    auth:
+      password: "secret" 
+  swift_reader:
+    auth:
+      password: "vYSBNgCI0YSMlrZCRv3L7wQL"
+
+  swift_uploader:
+    auth:
+      password: "E8oUq4KJxV1rZKYVOXwzYWcr"

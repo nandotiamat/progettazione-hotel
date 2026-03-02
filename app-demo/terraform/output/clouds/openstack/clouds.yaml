@@ -1,0 +1,35 @@
+clouds:
+  devstack:
+    auth:
+      auth_url: http://192.168.1.13/identity
+      username: "admin"
+      project_id: e20f12f8eeb44503af66f469e8c030aa
+      project_name: "admin"
+      user_domain_name: "Default"
+    region_name: "RegionOne"
+    interface: "public"
+    identity_api_version: 3
+  swift_reader:
+    auth:
+      auth_url: http://192.168.1.13/identity
+      username: "app_frontend_reader"
+      project_id: e20f12f8eeb44503af66f469e8c030aa
+      project_name: "admin"  
+      user_domain_name: "Default"
+      project_domain_name: "Default"
+    region_name: "RegionOne"
+    interface: "public"
+    identity_api_version: 3
+
+  # --- Profilo per il backend/admin (Lettura e Scrittura) ---
+  swift_uploader:
+    auth:
+      auth_url: http://192.168.1.13/identity
+      username: "app_frontend_uploader"
+      project_id: e20f12f8eeb44503af66f469e8c030aa
+      project_name: "admin" 
+      user_domain_name: "Default"
+      project_domain_name: "Default"
+    region_name: "RegionOne"
+    interface: "public"
+    identity_api_version: 3

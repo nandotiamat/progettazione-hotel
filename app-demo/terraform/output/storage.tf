@@ -21,7 +21,7 @@ resource "random_password" "uploader_password" {
 
 # Recupera il progetto corrente dall'autenticazione clouds.yaml
 data "openstack_identity_project_v3" "current" {
-  name = "demo"
+  name = "admin"
 }
 
 # --- RUOLI KEYSTONE ---
@@ -70,15 +70,15 @@ resource "openstack_identity_role_assignment_v3" "uploader_assignment" {
 
 # --- SWIFT CONTAINER ---
 
-# Container per i media assets dell'applicazione hotel
 resource "openstack_objectstorage_container_v1" "hotel_assets" {
   name = var.swift_container_name
 
-  # ACL di lettura: consente l'accesso all'utente reader
-  container_read = "${data.openstack_identity_project_v3.current.name}:${openstack_identity_user_v3.app_frontend_reader.name}"
+  # ACL di lettura: ogni utente con ruolo 'media_reader' o 'media_uploader' può leggere/elencare
+  # Nota: includiamo l'uploader nel read_acl così può vedere cosa carica
+  container_read = "${openstack_identity_role_v3.media_reader.name}, ${openstack_identity_role_v3.media_uploader.name}"
 
-  # ACL di scrittura: consente l'accesso all'utente uploader
-  container_write = "${data.openstack_identity_project_v3.current.name}:${openstack_identity_user_v3.app_frontend_uploader.name}"
+  # ACL di scrittura: ogni utente con ruolo 'media_uploader' può caricare/eliminare
+  container_write = "${openstack_identity_role_v3.media_uploader.name}"
 }
 
 # --- SEED MEDIA ---
