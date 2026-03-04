@@ -1,29 +1,29 @@
 resource "openstack_lb_loadbalancer_v2" "app" {
-  name          = "${var.app_name}-lb"
-  vip_subnet_id = openstack_networking_subnet_v2.app_subnet.id
+  name                  = "${var.app_name}-lb"
+  vip_subnet_id         = openstack_networking_subnet_v2.app_subnet.id
+  loadbalancer_provider = "ovn"
 }
 
 resource "openstack_lb_listener_v2" "http" {
   name            = "${var.app_name}-http"
-  protocol        = "HTTP"
+  protocol        = "TCP"
   protocol_port   = var.lb_listen_port
   loadbalancer_id = openstack_lb_loadbalancer_v2.app.id
 }
 
 resource "openstack_lb_pool_v2" "backend" {
   name        = "${var.app_name}-pool"
-  protocol    = "HTTP"
-  lb_method   = "ROUND_ROBIN"
+  protocol    = "TCP"
+  lb_method   = "SOURCE_IP_PORT"
   listener_id = openstack_lb_listener_v2.http.id
 }
 
 resource "openstack_lb_monitor_v2" "http" {
   pool_id     = openstack_lb_pool_v2.backend.id
-  type        = "HTTP"
+  type        = "TCP"
   delay       = 5
   timeout     = 3
   max_retries = 3
-  url_path    = "/health"
 }
 
 resource "openstack_lb_member_v2" "backend" {

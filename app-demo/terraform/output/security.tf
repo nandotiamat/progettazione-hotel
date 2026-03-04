@@ -9,7 +9,7 @@ resource "openstack_networking_secgroup_rule_v2" "backend_ingress_http" {
   protocol          = "tcp"
   port_range_min    = var.backend_app_port
   port_range_max    = var.backend_app_port
-  remote_ip_prefix  = var.network_cidr
+  remote_ip_prefix  = "0.0.0.0/0" 
   security_group_id = openstack_networking_secgroup_v2.backend.id
 }
 
@@ -19,15 +19,10 @@ resource "openstack_networking_secgroup_rule_v2" "backend_ingress_ssh" {
   protocol          = "tcp"
   port_range_min    = 22
   port_range_max    = 22
-  remote_ip_prefix  = var.ssh_ingress_cidr
+  remote_ip_prefix  = "0.0.0.0/0" 
   security_group_id = openstack_networking_secgroup_v2.backend.id
 }
 
-resource "openstack_networking_secgroup_rule_v2" "backend_egress_all" {
-  direction         = "egress"
-  ethertype         = "IPv4"
-  security_group_id = openstack_networking_secgroup_v2.backend.id
-}
 
 resource "openstack_networking_secgroup_v2" "db" {
   name        = "${var.app_name}-db"
@@ -54,8 +49,3 @@ resource "openstack_networking_secgroup_rule_v2" "db_ingress_ssh" {
   security_group_id = openstack_networking_secgroup_v2.db.id
 }
 
-resource "openstack_networking_secgroup_rule_v2" "db_egress_all" {
-  direction         = "egress"
-  ethertype         = "IPv4"
-  security_group_id = openstack_networking_secgroup_v2.db.id
-}

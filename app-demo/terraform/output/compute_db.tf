@@ -16,9 +16,9 @@ locals {
 
 resource "openstack_compute_instance_v2" "db" {
   name      = "${var.app_name}-db"
-  image_id  = data.openstack_images_image_v2.image.id
+  image_id  = openstack_images_image_v2.ubuntu_jammy.id
   flavor_id = data.openstack_compute_flavor_v2.flavor.id
-  key_pair  = var.keypair_name
+  key_pair  = openstack_compute_keypair_v2.hotel_keypair.name
   user_data = local.db_user_data
 
   security_groups = [

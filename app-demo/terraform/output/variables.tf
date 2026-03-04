@@ -1,42 +1,3 @@
-variable "openstack_auth_url" {
-  type        = string
-  description = "OpenStack Keystone auth URL (e.g. https://devstack:5000/v3)."
-}
-
-variable "openstack_region" {
-  type        = string
-  description = "OpenStack region name."
-  default     = "RegionOne"
-}
-
-variable "openstack_user_name" {
-  type        = string
-  description = "OpenStack user name."
-}
-
-variable "openstack_password" {
-  type        = string
-  description = "OpenStack user password."
-  sensitive   = true
-}
-
-variable "openstack_project_name" {
-  type        = string
-  description = "OpenStack project (tenant) name."
-}
-
-variable "openstack_user_domain_name" {
-  type        = string
-  description = "OpenStack user domain name."
-  default     = "Default"
-}
-
-variable "openstack_project_domain_name" {
-  type        = string
-  description = "OpenStack project domain name."
-  default     = "Default"
-}
-
 variable "external_network_name" {
   type        = string
   description = "Name of the external (public) network used for router gateway and floating IPs."
@@ -64,21 +25,6 @@ variable "network_dns_nameservers" {
   type        = list(string)
   description = "DNS nameservers to configure on the tenant subnet."
   default     = ["1.1.1.1", "8.8.8.8"]
-}
-
-variable "image_name" {
-  type        = string
-  description = "Image name for instances (must exist in Glance)."
-}
-
-variable "flavor_name" {
-  type        = string
-  description = "Flavor name for instances (must exist in Nova)."
-}
-
-variable "keypair_name" {
-  type        = string
-  description = "Nova keypair name used for SSH access to instances."
 }
 
 variable "ssh_ingress_cidr" {
