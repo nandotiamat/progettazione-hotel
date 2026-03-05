@@ -48,7 +48,7 @@ resource "openstack_objectstorage_container_v1" "assets" {
   name          = "hotel-assets"
   force_destroy = true
 
-  container_read  = "${data.openstack_identity_project_v3.current.id}:${openstack_identity_user_v3.app_frontend_reader.name}"
+  container_read  = "${data.openstack_identity_project_v3.current.id}:${openstack_identity_user_v3.app_frontend_reader.name},${data.openstack_identity_project_v3.current.id}:${openstack_identity_user_v3.app_frontend_uploader.name}"
   container_write = "${data.openstack_identity_project_v3.current.id}:${openstack_identity_user_v3.app_frontend_uploader.name}"
 
   depends_on = [

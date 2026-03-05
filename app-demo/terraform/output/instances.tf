@@ -2,6 +2,7 @@ locals {
   frontend_count = 2
 }
 
+
 resource "openstack_networking_port_v2" "bastion" {
   name           = "hotel-bastion-port"
   network_id     = openstack_networking_network_v2.private.id
@@ -10,6 +11,8 @@ resource "openstack_networking_port_v2" "bastion" {
   security_group_ids = [
     openstack_networking_secgroup_v2.bastion.id,
   ]
+
+  depends_on = [openstack_networking_subnet_v2.private]
 }
 
 resource "openstack_networking_port_v2" "frontend" {
@@ -21,6 +24,7 @@ resource "openstack_networking_port_v2" "frontend" {
   security_group_ids = [
     openstack_networking_secgroup_v2.frontend.id,
   ]
+  depends_on = [openstack_networking_subnet_v2.private]
 }
 
 resource "openstack_networking_port_v2" "backend" {
@@ -31,6 +35,7 @@ resource "openstack_networking_port_v2" "backend" {
   security_group_ids = [
     openstack_networking_secgroup_v2.backend.id,
   ]
+  depends_on = [openstack_networking_subnet_v2.private]
 }
 
 resource "openstack_networking_port_v2" "db" {
@@ -41,13 +46,14 @@ resource "openstack_networking_port_v2" "db" {
   security_group_ids = [
     openstack_networking_secgroup_v2.db.id,
   ]
+  depends_on = [openstack_networking_subnet_v2.private]
 }
 
 resource "openstack_compute_instance_v2" "bastion" {
-  name        = "hotel-bastion"
-  image_id    = data.openstack_images_image_v2.cirros.id
-  flavor_name = openstack_compute_flavor_v2.hotel_flavor.name
-  key_pair    = openstack_compute_keypair_v2.hotel.name
+  name      = "hotel-bastion"
+  image_id  = data.openstack_images_image_v2.cirros.id
+  flavor_id = openstack_compute_flavor_v2.hotel_flavor.id
+  key_pair  = openstack_compute_keypair_v2.hotel.name
 
   network {
     port = openstack_networking_port_v2.bastion.id
@@ -57,11 +63,11 @@ resource "openstack_compute_instance_v2" "bastion" {
 }
 
 resource "openstack_compute_instance_v2" "frontend" {
-  count       = local.frontend_count
-  name        = "hotel-frontend-${count.index + 1}"
-  image_id    = openstack_images_image_v2.ubuntu_jammy.id
-  flavor_name = openstack_compute_flavor_v2.hotel_flavor.name
-  key_pair    = openstack_compute_keypair_v2.hotel.name
+  count     = local.frontend_count
+  name      = "hotel-frontend-${count.index + 1}"
+  image_id  = openstack_images_image_v2.ubuntu_jammy.id
+  flavor_id = openstack_compute_flavor_v2.hotel_flavor.id
+  key_pair  = openstack_compute_keypair_v2.hotel.name
 
   user_data = templatefile("${path.module}/cloud-init/frontend-init-node.yaml.tftpl", {
     index = count.index + 1
@@ -75,10 +81,10 @@ resource "openstack_compute_instance_v2" "frontend" {
 }
 
 resource "openstack_compute_instance_v2" "backend" {
-  name        = "hotel-backend"
-  image_id    = openstack_images_image_v2.ubuntu_jammy.id
-  flavor_name = openstack_compute_flavor_v2.hotel_flavor.name
-  key_pair    = openstack_compute_keypair_v2.hotel.name
+  name      = "hotel-backend"
+  image_id  = openstack_images_image_v2.ubuntu_jammy.id
+  flavor_id = openstack_compute_flavor_v2.hotel_flavor.id
+  key_pair  = openstack_compute_keypair_v2.hotel.name
 
   user_data = templatefile("${path.module}/cloud-init/backend-init-node.yaml.tftpl", {})
 
@@ -90,10 +96,10 @@ resource "openstack_compute_instance_v2" "backend" {
 }
 
 resource "openstack_compute_instance_v2" "db" {
-  name        = "hotel-db"
-  image_id    = openstack_images_image_v2.ubuntu_jammy.id
-  flavor_name = openstack_compute_flavor_v2.hotel_flavor.name
-  key_pair    = openstack_compute_keypair_v2.hotel.name
+  name      = "hotel-db"
+  image_id  = openstack_images_image_v2.ubuntu_jammy.id
+  flavor_id = openstack_compute_flavor_v2.hotel_flavor.id
+  key_pair  = openstack_compute_keypair_v2.hotel.name
 
   user_data = templatefile("${path.module}/cloud-init/cloud-init-db.yaml.tftpl", {
     db_name     = var.db_name

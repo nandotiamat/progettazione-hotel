@@ -13,7 +13,7 @@ variable "jammy_image_source_url" {
 variable "cirros_image_name" {
   type        = string
   description = "Existing Cirros image name in Glance."
-  default     = "cirros"
+  default     = "cirros-0.6.3-x86_64-disk"
 }
 
 variable "ssh_private_key_path" {
@@ -55,7 +55,7 @@ variable "keystone_default_password_length" {
 variable "keystone_project_name" {
   type        = string
   description = "Keystone project/tenant name to bind roles into."
-  default     = "demo"
+  default     = "admin"
 }
 
 variable "seed_media_dir" {

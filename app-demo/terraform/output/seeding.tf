@@ -11,8 +11,8 @@ resource "openstack_objectstorage_object_v1" "seed" {
   for_each = local.seed_media_files
 
   container_name = openstack_objectstorage_container_v1.assets.name
-  name           = each.key
-  source         = "${local.seed_media_dir_abs}/${each.key}"
+  name   = replace(each.key, "_", "/")
+  source = "${local.seed_media_dir_abs}/${each.key}"
 
   depends_on = [openstack_objectstorage_container_v1.assets]
 }
