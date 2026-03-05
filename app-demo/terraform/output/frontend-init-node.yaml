@@ -1,0 +1,22 @@
+#cloud-config
+package_update: true
+package_upgrade: true
+packages:
+  - nginx
+  - curl
+write_files:
+  - path: /var/www/html/index.html
+    content: |
+      <!DOCTYPE html>
+      <html>
+      <head>
+          <title>Hotel App Demo</title>
+      </head>
+      <body>
+          <h1>Welcome to the Hotel Application!</h1>
+          <p>Served from the OpenStack Frontend.</p>
+      </body>
+      </html>
+runcmd:
+  - systemctl enable nginx
+  - systemctl restart nginx

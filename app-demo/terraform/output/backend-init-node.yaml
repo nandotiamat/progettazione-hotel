@@ -1,0 +1,37 @@
+#cloud-config
+package_update: true
+package_upgrade: true
+packages:
+  - python3-pip
+  - python3-venv
+  - postgresql-client
+runcmd:
+  - python3 -m venv /opt/app-env
+  - /opt/app-env/bin/pip install fastapi uvicorn psycopg2-binary
+  - |
+    cat << 'EOF' > /opt/app.py
+    from fastapi import FastAPI
+    app = FastAPI()
+
+    @app.get("/")
+    def read_root():
+        return {"Hello": "World from Backend"}
+    EOF
+  - |
+    cat << 'EOF' > /etc/systemd/system/fastapi.service
+    [Unit]
+    Description=FastAPI application
+    After=network.target
+
+    [Service]
+    User=ubuntu
+    WorkingDirectory=/opt
+    Environment="PATH=/opt/app-env/bin"
+    ExecStart=/opt/app-env/bin/uvicorn app:app --host 0.0.0.0 --port 80
+
+    [Install]
+    WantedBy=multi-user.target
+    EOF
+  - systemctl daemon-reload
+  - systemctl enable fastapi
+  - systemctl restart fastapi

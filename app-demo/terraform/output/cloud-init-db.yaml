@@ -1,0 +1,13 @@
+#cloud-config
+package_update: true
+package_upgrade: true
+packages:
+  - postgresql
+  - postgresql-contrib
+runcmd:
+  - sudo -u postgres psql -c "CREATE USER hotel_user WITH PASSWORD 'hotel_password';"
+  - sudo -u postgres psql -c "CREATE DATABASE hotel_db OWNER hotel_user;"
+  - sudo -u postgres psql -c "GRANT ALL PRIVILEGES ON DATABASE hotel_db TO hotel_user;"
+  - echo "listen_addresses = '*'" >> /etc/postgresql/14/main/postgresql.conf
+  - echo "host all all 0.0.0.0/0 md5" >> /etc/postgresql/14/main/pg_hba.conf
+  - systemctl restart postgresql
