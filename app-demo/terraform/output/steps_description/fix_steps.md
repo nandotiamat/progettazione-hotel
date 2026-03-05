@@ -798,3 +798,5 @@ connection to server at "10.0.1.67", port 5432 failed: FATAL:  password authenti
 ```
 
 È interessante come è stata gestita la parte degli IP delle reti: è stato preferito creare delle risorse `openstack_networking_port_v2`, anzichè abilitare il DHCP server della subnet, o comunque assegnare dei fixed_ip ma DIRETTAMENTE a livello delle compute instance: sottolineare questa differenza poi.
+
+TODO: commenta il `depends_on` aggiunto in floating_ips.tf
