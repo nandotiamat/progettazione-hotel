@@ -4,11 +4,6 @@ variable "openstack_cloud" {
   default     = "devstack"
 }
 
-variable "project_id" {
-  description = "The default project ID for the OpenStack environment"
-  type        = string
-}
-
 variable "external_network_name" {
   description = "The name of the external network in OpenStack"
   type        = string

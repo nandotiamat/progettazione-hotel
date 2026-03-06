@@ -1,5 +1,9 @@
 # --- IAM (Keystone) Users & Roles ---
 
+data "openstack_identity_project_v3" "current" {
+  name = "admin"
+}
+
 resource "random_password" "reader_password" {
   length  = 16
   special = true
@@ -12,14 +16,14 @@ resource "random_password" "uploader_password" {
 
 resource "openstack_identity_user_v3" "app_frontend_reader" {
   name                                  = "app_frontend_reader"
-  default_project_id                    = var.project_id
+  default_project_id                    = data.openstack_identity_project_v3.current.id
   password                              = random_password.reader_password.result
   ignore_change_password_upon_first_use = true
 }
 
 resource "openstack_identity_user_v3" "app_frontend_uploader" {
   name                                  = "app_frontend_uploader"
-  default_project_id                    = var.project_id
+  default_project_id                    = data.openstack_identity_project_v3.current.id
   password                              = random_password.uploader_password.result
   ignore_change_password_upon_first_use = true
 }
@@ -34,13 +38,13 @@ resource "openstack_identity_role_v3" "media_uploader" {
 
 resource "openstack_identity_role_assignment_v3" "reader_assignment" {
   user_id    = openstack_identity_user_v3.app_frontend_reader.id
-  project_id = var.project_id
+  project_id = data.openstack_identity_project_v3.current.id
   role_id    = openstack_identity_role_v3.media_reader.id
 }
 
 resource "openstack_identity_role_assignment_v3" "uploader_assignment" {
   user_id    = openstack_identity_user_v3.app_frontend_uploader.id
-  project_id = var.project_id
+  project_id = data.openstack_identity_project_v3.current.id
   role_id    = openstack_identity_role_v3.media_uploader.id
 }
 

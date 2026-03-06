@@ -52,7 +52,13 @@ resource "openstack_networking_floatingip_v2" "bastion_fip" {
   pool = data.openstack_networking_network_v2.external_net.name
 }
 
+data "openstack_networking_port_v2" "bastion_port" {
+  device_id  = openstack_compute_instance_v2.bastion.id
+  network_id = openstack_networking_network_v2.hotel_private_net.id
+}
+
 resource "openstack_networking_floatingip_associate_v2" "bastion_fip_assoc" {
   floating_ip = openstack_networking_floatingip_v2.bastion_fip.address
-  port_id     = openstack_compute_instance_v2.bastion.network.0.port
+  port_id     = data.openstack_networking_port_v2.bastion_port.id
 }
+

@@ -4,8 +4,8 @@ resource "openstack_objectstorage_container_v1" "hotel_assets" {
   name = "hotel-assets"
 
   # Configure ACLs based on Keystone roles created in step 2
-  container_read  = "app_frontend_reader"
-  container_write = "app_frontend_uploader"
+  container_read  = "media_reader"
+  container_write = "media_uploader"
 }
 
 resource "local_file" "seed_image" {

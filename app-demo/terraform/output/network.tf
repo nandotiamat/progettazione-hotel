@@ -10,6 +10,7 @@ resource "openstack_networking_subnet_v2" "hotel_private_subnet" {
   network_id = openstack_networking_network_v2.hotel_private_net.id
   cidr       = "10.0.1.0/24"
   ip_version = 4
+  dns_nameservers = ["8.8.8.8", "8.8.4.4"]
 }
 
 data "openstack_networking_network_v2" "external_net" {
