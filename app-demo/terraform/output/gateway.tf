@@ -1,20 +1,21 @@
 # output/gateway.tf
 resource "openstack_lb_loadbalancer_v2" "app_lb" {
-  name          = "app_loadbalancer"
-  vip_subnet_id = openstack_networking_subnet_v2.app_subnet.id
+  name                  = "app_loadbalancer"
+  vip_subnet_id         = openstack_networking_subnet_v2.app_subnet.id
+  loadbalancer_provider = "ovn"
 }
 
 resource "openstack_lb_listener_v2" "app_listener" {
   name            = "app_listener"
-  protocol        = "HTTP"
+  protocol        = "TCP"
   protocol_port   = 80
   loadbalancer_id = openstack_lb_loadbalancer_v2.app_lb.id
 }
 
 resource "openstack_lb_pool_v2" "app_pool" {
   name        = "app_pool"
-  protocol    = "HTTP"
-  lb_method   = "ROUND_ROBIN"
+  protocol    = "TCP"
+  lb_method   = "SOURCE_IP_PORT"
   listener_id = openstack_lb_listener_v2.app_listener.id
 }
 

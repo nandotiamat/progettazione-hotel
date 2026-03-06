@@ -13,7 +13,6 @@ resource "openstack_networking_router_v2" "router" {
 resource "openstack_networking_network_v2" "app_net" {
   name           = "app_network"
   admin_state_up = true
-  mtu            = 1450
 }
 
 resource "openstack_networking_subnet_v2" "app_subnet" {
